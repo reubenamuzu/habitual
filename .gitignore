@@ -2,6 +2,8 @@
 
 # dependencies
 node_modules/
+.agents/
+.vscode/
 
 # Expo
 .expo/
@@ -37,6 +39,8 @@ yarn-error.*
 *.tsbuildinfo
 
 app-example
+
+Claude.md
 
 # generated native folders
 /ios

@@ -9,21 +9,68 @@ type IconMapping = Record<SymbolViewProps['name'], ComponentProps<typeof Materia
 type IconSymbolName = keyof typeof MAPPING;
 
 /**
- * Add your SF Symbols to Material Icons mappings here.
- * - see Material Icons in the [Icons Directory](https://icons.expo.fyi).
- * - see SF Symbols in the [SF Symbols](https://developer.apple.com/sf-symbols/) app.
+ * SF Symbols → Material Icons mapping.
+ * See: https://icons.expo.fyi
  */
 const MAPPING = {
-  'house.fill': 'home',
-  'paperplane.fill': 'send',
+  // Navigation
+  'house.fill':                           'home',
+  'paperplane.fill':                      'send',
   'chevron.left.forwardslash.chevron.right': 'code',
-  'chevron.right': 'chevron-right',
-} as IconMapping;
+  'chevron.right':                        'chevron-right',
+  'chevron.left':                         'chevron-left',
+  'xmark':                                'close',
+
+  // Habits / Actions
+  'checkmark.circle.fill':                'check-circle',
+  'checkmark.circle':                     'radio-button-unchecked',
+  'plus':                                 'add',
+  'plus.circle.fill':                     'add-circle',
+  'pencil':                               'edit',
+  'trash':                                'delete',
+  'square.and.pencil':                    'edit-note',
+  'arrow.up.arrow.down':                  'swap-vert',
+
+  // Dashboard / Stats
+  'chart.bar.fill':                       'bar-chart',
+  'flame.fill':                           'local-fire-department',
+  'calendar':                             'calendar-today',
+  'clock':                                'access-time',
+  'star.fill':                            'star',
+
+  // Mood
+  'face.smiling':                         'sentiment-satisfied-alt',
+  'face.smiling.fill':                    'sentiment-satisfied',
+  'sun.max.fill':                         'wb-sunny',
+  'moon.fill':                            'nightlight',
+
+  // Profile / Settings
+  'person.fill':                          'person',
+  'person.circle':                        'account-circle',
+  'gearshape.fill':                       'settings',
+  'info.circle':                          'info',
+  'square.and.arrow.up':                  'ios-share',
+
+  // General UI
+  'circle.fill':                          'circle',
+  'circle':                               'radio-button-unchecked',
+  'sparkles':                             'auto-awesome',
+  'leaf.fill':                            'eco',
+  'bolt.fill':                            'bolt',
+  'book.fill':                            'menu-book',
+  'drop.fill':                            'water-drop',
+  'figure.walk':                          'directions-walk',
+  'bed.double.fill':                      'hotel',
+  'fork.knife':                           'restaurant',
+  'dumbbell.fill':                        'fitness-center',
+  'heart.fill':                           'favorite',
+  'brain.head.profile':                   'psychology',
+  'music.note':                           'music-note',
+  'pencil.and.outline':                   'draw',
+} as const satisfies Partial<IconMapping>;
 
 /**
  * An icon component that uses native SF Symbols on iOS, and Material Icons on Android and web.
- * This ensures a consistent look across platforms, and optimal resource usage.
- * Icon `name`s are based on SF Symbols and require manual mapping to Material Icons.
  */
 export function IconSymbol({
   name,
@@ -39,3 +86,5 @@ export function IconSymbol({
 }) {
   return <MaterialIcons color={color} size={size} name={MAPPING[name]} style={style} />;
 }
+
+export type { IconSymbolName };

@@ -1,6 +1,9 @@
 import { SymbolView, SymbolViewProps, SymbolWeight } from 'expo-symbols';
 import { StyleProp, ViewStyle } from 'react-native';
 
+// On iOS we use native SF Symbols — all our MAPPING keys are valid SF symbol names.
+export type IconSymbolName = SymbolViewProps['name'];
+
 export function IconSymbol({
   name,
   size = 24,
@@ -8,7 +11,7 @@ export function IconSymbol({
   style,
   weight = 'regular',
 }: {
-  name: SymbolViewProps['name'];
+  name: IconSymbolName;
   size?: number;
   color: string;
   style?: StyleProp<ViewStyle>;
