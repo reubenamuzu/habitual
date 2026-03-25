@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from 'expo-router';
 import { Palette, Spacing, Typography } from '@/constants/theme';
@@ -13,8 +13,8 @@ import { useMood } from '@/hooks/use-mood';
 import { useHeatmapData } from '@/hooks/use-heatmap-data';
 
 export default function DashboardScreen() {
-  const { moodLogs, refresh: refreshMood } = useMood();
-  const { heatmapData, loading, refresh: refreshHeatmap } = useHeatmapData();
+  const { moodLogs, error: moodError, refresh: refreshMood } = useMood();
+  const { heatmapData, loading, error: heatmapError, refresh: refreshHeatmap } = useHeatmapData();
 
   useFocusEffect(
     useCallback(() => {
@@ -32,7 +32,17 @@ export default function DashboardScreen() {
       >
         <ScreenHeader title="Dashboard" />
 
-        {/* Mood chart */}
+        {moodError && (
+          <TouchableOpacity style={styles.errorBanner} onPress={refreshMood} accessibilityRole="button" accessibilityLabel="Failed to load mood data. Tap to retry.">
+            <ThemedText style={styles.errorText}>⚠️ {moodError} — Tap to retry</ThemedText>
+          </TouchableOpacity>
+        )}
+        {heatmapError && (
+          <TouchableOpacity style={styles.errorBanner} onPress={refreshHeatmap} accessibilityRole="button" accessibilityLabel="Failed to load heatmap data. Tap to retry.">
+            <ThemedText style={styles.errorText}>⚠️ {heatmapError} — Tap to retry</ThemedText>
+          </TouchableOpacity>
+        )}
+
         <View style={styles.section}>
           <ThemedText style={styles.sectionTitle}>Mood Score</ThemedText>
           <View style={styles.card}>
@@ -42,7 +52,6 @@ export default function DashboardScreen() {
 
         <Divider style={styles.divider} />
 
-        {/* Heatmaps */}
         <View style={styles.section}>
           <ThemedText style={styles.sectionTitle}>Habit Consistency</ThemedText>
           {!loading && heatmapData.length === 0 ? (
@@ -93,5 +102,17 @@ const styles = StyleSheet.create({
   },
   divider: {
     marginVertical: Spacing.base,
+  },
+  errorBanner: {
+    backgroundColor: '#FEF2F2',
+    borderRadius: 8,
+    padding: Spacing.md,
+    marginBottom: Spacing.sm,
+    borderWidth: 1,
+    borderColor: '#FECACA',
+  },
+  errorText: {
+    fontSize: Typography.sm,
+    color: Palette.danger,
   },
 });

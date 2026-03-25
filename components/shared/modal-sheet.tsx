@@ -13,7 +13,7 @@ interface ModalSheetProps {
 
 export function ModalSheet({ title, subtitle, onClose, children }: ModalSheetProps) {
   return (
-    <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
+    <SafeAreaView style={styles.safe} edges={['top', 'bottom']} accessibilityViewIsModal={true}>
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -30,7 +30,7 @@ export function ModalSheet({ title, subtitle, onClose, children }: ModalSheetPro
             <ThemedText style={styles.title}>{title}</ThemedText>
             {subtitle ? <ThemedText style={styles.subtitle}>{subtitle}</ThemedText> : null}
           </View>
-          <IconButton name="xmark" onPress={onClose} size={36} backgroundColor={Palette.accentMuted} iconColor={Palette.inkSecondary} />
+          <IconButton name="xmark" onPress={onClose} size={36} backgroundColor={Palette.accentMuted} iconColor={Palette.inkSecondary} accessibilityLabel="Close" />
         </View>
 
         <ScrollView

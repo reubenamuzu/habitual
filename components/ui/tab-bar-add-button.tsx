@@ -14,7 +14,13 @@ export function TabBarAddButton() {
 
   return (
     <View style={styles.wrapper}>
-      <PressableScale style={styles.button} onPress={handlePress} scaleTo={0.92}>
+      <PressableScale
+        style={styles.button}
+        onPress={handlePress}
+        scaleTo={0.92}
+        accessibilityRole="button"
+        accessibilityLabel="Add new habit"
+      >
         {/* Plus icon drawn with views for crispness */}
         <View style={styles.plusH} />
         <View style={styles.plusV} />

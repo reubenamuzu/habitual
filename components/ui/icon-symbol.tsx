@@ -44,9 +44,11 @@ const MAPPING = {
   'sun.max.fill':                         'wb-sunny',
   'moon.fill':                            'nightlight',
 
-  // Profile / Settings
+  // Profile / Social
   'person.fill':                          'person',
   'person.circle':                        'account-circle',
+  'person.2.fill':                        'group',
+  'person.badge.plus':                    'person-add',
   'gearshape.fill':                       'settings',
   'info.circle':                          'info',
   'square.and.arrow.up':                  'ios-share',

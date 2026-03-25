@@ -3,20 +3,43 @@ import { StyleSheet, TextInput, View } from 'react-native';
 import { Palette, Radius, Spacing, Typography } from '@/constants/theme';
 import { ThemedText } from '@/components/themed-text';
 import { PressableScale } from '@/components/shared/pressable-scale';
+import { SchedulePicker } from '@/components/shared/schedule-picker';
 import { HabitIconPicker } from './habit-icon-picker';
 
 interface HabitFormProps {
   initialName?: string;
   initialIcon?: string;
-  onSubmit: (name: string, icon: string) => void;
+  initialScheduleType?: 'daily' | 'custom';
+  initialScheduleDays?: number[];
+  onSubmit: (name: string, icon: string, scheduleType: 'daily' | 'custom', scheduleDays: number[]) => void;
   submitLabel?: string;
+  disabled?: boolean;
 }
 
-export function HabitForm({ initialName = '', initialIcon = 'circle.fill', onSubmit, submitLabel = 'Create Habit' }: HabitFormProps) {
+const ALL_DAYS = [0, 1, 2, 3, 4, 5, 6];
+
+export function HabitForm({
+  initialName = '',
+  initialIcon = 'circle.fill',
+  initialScheduleType = 'daily',
+  initialScheduleDays = ALL_DAYS,
+  onSubmit,
+  submitLabel = 'Create Habit',
+  disabled = false,
+}: HabitFormProps) {
   const [name, setName] = useState(initialName);
   const [icon, setIcon] = useState(initialIcon);
+  const [scheduleDays, setScheduleDays] = useState<number[]>(
+    initialScheduleType === 'daily' ? ALL_DAYS : initialScheduleDays
+  );
 
-  const canSubmit = name.trim().length > 0;
+  const canSubmit = name.trim().length > 0 && !disabled;
+
+  const handleSubmit = () => {
+    if (!canSubmit) return;
+    const isDailySchedule = scheduleDays.length === 7 && ALL_DAYS.every((d) => scheduleDays.includes(d));
+    onSubmit(name.trim(), icon, isDailySchedule ? 'daily' : 'custom', scheduleDays);
+  };
 
   return (
     <View style={styles.container}>
@@ -41,11 +64,20 @@ export function HabitForm({ initialName = '', initialIcon = 'circle.fill', onSub
         <HabitIconPicker selected={icon} onSelect={setIcon} />
       </View>
 
+      {/* Schedule picker */}
+      <View style={styles.field}>
+        <ThemedText style={styles.label}>Schedule</ThemedText>
+        <SchedulePicker scheduleDays={scheduleDays} onChange={setScheduleDays} />
+      </View>
+
       {/* Submit */}
       <PressableScale
         style={[styles.button, !canSubmit && styles.buttonDisabled]}
-        onPress={() => canSubmit && onSubmit(name.trim(), icon)}
+        onPress={handleSubmit}
         disabled={!canSubmit}
+        accessibilityRole="button"
+        accessibilityLabel={submitLabel}
+        accessibilityState={{ disabled: !canSubmit }}
       >
         <ThemedText style={styles.buttonText}>{submitLabel}</ThemedText>
       </PressableScale>

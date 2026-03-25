@@ -1,31 +1,28 @@
-import { useCallback, useEffect, useState } from 'react';
-import { getDb } from '@/lib/db/database';
-import type { HabitLog } from '@/lib/db/schema';
-import * as logsService from '@/lib/habits/habit-logs.service';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useAuth } from './use-auth';
+import { getLogsForDate, toggleHabitLog } from '@/lib/habits/habit-logs.service';
 
 export function useHabitLogs(date: string) {
-  const [logs, setLogs] = useState<HabitLog[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
+  const qc = useQueryClient();
+  const key = ['habit-logs', user?.id, date] as const;
 
-  const refresh = useCallback(async () => {
-    const db = await getDb();
-    const data = await logsService.getLogsForDate(db, date);
-    setLogs(data);
-    setLoading(false);
-  }, [date]);
+  const query = useQuery({
+    queryKey: key,
+    queryFn: () => getLogsForDate(user!.id, date),
+    enabled: !!user,
+  });
 
-  useEffect(() => {
-    refresh();
-  }, [refresh]);
+  const toggleMutation = useMutation({
+    mutationFn: (habitId: string) => toggleHabitLog(user!.id, habitId, date),
+    onSuccess: () => qc.invalidateQueries({ queryKey: key }),
+  });
 
-  const toggleLog = useCallback(
-    async (habitId: number) => {
-      const db = await getDb();
-      await logsService.toggleHabitLog(db, habitId, date);
-      await refresh();
-    },
-    [date, refresh]
-  );
-
-  return { logs, loading, toggleLog, refresh };
+  return {
+    logs: query.data ?? [],
+    loading: query.isLoading,
+    error: query.error ? String(query.error) : null,
+    toggleLog: toggleMutation.mutateAsync,
+    refresh: () => qc.invalidateQueries({ queryKey: key }),
+  };
 }

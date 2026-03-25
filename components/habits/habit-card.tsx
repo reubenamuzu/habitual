@@ -43,6 +43,8 @@ export function HabitCard({ habit, onToggle, onLongPress }: HabitCardProps) {
       style={[styles.card, habit.completed && styles.cardCompleted]}
       onLongPress={onLongPress ? () => onLongPress(habit.id) : undefined}
       scaleTo={0.98}
+      accessibilityLabel={`${habit.name}, ${habit.completed ? 'completed' : 'not completed'}`}
+      accessibilityHint={onLongPress ? 'Double tap to toggle. Long press for options.' : undefined}
     >
       <View style={styles.iconWrapper}>
         <ThemedText style={styles.emoji}>{getHabitEmoji(habit.icon)}</ThemedText>

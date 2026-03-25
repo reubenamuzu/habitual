@@ -6,6 +6,7 @@ import { PressableScale } from './pressable-scale';
 interface IconButtonProps {
   name: IconSymbolName;
   onPress: () => void;
+  accessibilityLabel: string;
   size?: number;
   backgroundColor?: string;
   iconColor?: string;
@@ -14,12 +15,19 @@ interface IconButtonProps {
 export function IconButton({
   name,
   onPress,
+  accessibilityLabel,
   size = 40,
   backgroundColor = Palette.accentMuted,
   iconColor = Palette.inkPrimary,
 }: IconButtonProps) {
+  const buttonSize = Math.max(size, 44);
   return (
-    <PressableScale onPress={onPress} style={[styles.button, { width: size, height: size, borderRadius: size / 2, backgroundColor }]}>
+    <PressableScale
+      onPress={onPress}
+      style={[styles.button, { width: buttonSize, height: buttonSize, borderRadius: buttonSize / 2, backgroundColor }]}
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel}
+    >
       <View style={styles.inner}>
         <IconSymbol name={name} size={size * 0.5} color={iconColor} />
       </View>

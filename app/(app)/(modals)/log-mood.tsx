@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Alert, StyleSheet, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Palette, Radius, Spacing, Typography } from '@/constants/theme';
 import { ModalSheet } from '@/components/shared/modal-sheet';
@@ -14,10 +14,19 @@ export default function LogMoodModal() {
   const timeOfDay = params.timeOfDay ?? 'morning';
   const { upsertMood } = useMood();
   const [score, setScore] = useState(5);
+  const [saving, setSaving] = useState(false);
 
   const handleSave = async () => {
-    await upsertMood(timeOfDay, score);
-    router.back();
+    if (saving) return;
+    try {
+      setSaving(true);
+      await upsertMood(timeOfDay, score);
+      router.back();
+    } catch (e) {
+      Alert.alert('Error', e instanceof Error ? e.message : 'Failed to save mood. Please try again.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const label = timeOfDay === 'morning' ? '☀️ Morning' : '🌙 Evening';
@@ -36,8 +45,14 @@ export default function LogMoodModal() {
           <ThemedText style={styles.previewLabel}>out of 10</ThemedText>
         </View>
 
-        <PressableScale style={styles.button} onPress={handleSave}>
-          <ThemedText style={styles.buttonText}>Save</ThemedText>
+        <PressableScale
+          style={[styles.button, saving && styles.buttonDisabled]}
+          onPress={handleSave}
+          disabled={saving}
+          accessibilityRole="button"
+          accessibilityLabel={saving ? 'Saving mood' : 'Save mood'}
+        >
+          <ThemedText style={styles.buttonText}>{saving ? 'Saving…' : 'Save'}</ThemedText>
         </PressableScale>
       </View>
     </ModalSheet>
@@ -68,6 +83,11 @@ const styles = StyleSheet.create({
     borderRadius: Radius.md,
     paddingVertical: Spacing.md,
     alignItems: 'center',
+    minHeight: 44,
+    justifyContent: 'center',
+  },
+  buttonDisabled: {
+    backgroundColor: Palette.inkDisabled,
   },
   buttonText: {
     fontSize: Typography.md,

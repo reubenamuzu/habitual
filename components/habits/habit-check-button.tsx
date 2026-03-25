@@ -29,7 +29,13 @@ export function HabitCheckButton({ completed, onToggle, size = 28 }: HabitCheckB
   };
 
   return (
-    <Pressable onPress={handlePress} hitSlop={8}>
+    <Pressable
+      onPress={handlePress}
+      hitSlop={8}
+      accessibilityRole="checkbox"
+      accessibilityState={{ checked: completed }}
+      accessibilityLabel={completed ? 'Mark as incomplete' : 'Mark as complete'}
+    >
       <Animated.View
         style={[
           styles.circle,

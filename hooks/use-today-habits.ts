@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useState } from 'react';
-import { getDb } from '@/lib/db/database';
-import type { Habit } from '@/lib/db/schema';
-import * as habitsService from '@/lib/habits/habits.service';
-import * as logsService from '@/lib/habits/habit-logs.service';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useAuth } from './use-auth';
+import { getHabits } from '@/lib/habits/habits.service';
+import { getLogsForDate, toggleHabitLog } from '@/lib/habits/habit-logs.service';
+import type { Habit, HabitLog } from '@/lib/database.types';
 
 export type HabitWithCompletion = Habit & { completed: boolean };
 
@@ -10,43 +10,55 @@ function todayISO(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
+function isScheduledToday(habit: Habit): boolean {
+  const dayOfWeek = new Date().getDay(); // 0=Sun
+  return habit.schedule_type === 'daily' || habit.schedule_days.includes(dayOfWeek);
+}
+
+export const TODAY_HABITS_KEY = (userId: string, date: string) =>
+  ['today-habits', userId, date] as const;
+
 export function useTodayHabits() {
-  const [todayHabits, setTodayHabits] = useState<HabitWithCompletion[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
+  const qc = useQueryClient();
   const date = todayISO();
 
-  const refresh = useCallback(async () => {
-    const db = await getDb();
-    const [habits, logs] = await Promise.all([
-      habitsService.getAllHabits(db),
-      logsService.getLogsForDate(db, date),
-    ]);
-
-    const logMap = new Map(logs.map((l) => [l.habit_id, l.completed === 1]));
-    const merged: HabitWithCompletion[] = habits.map((h) => ({
-      ...h,
-      completed: logMap.get(h.id) ?? false,
-    }));
-
-    setTodayHabits(merged);
-    setLoading(false);
-  }, [date]);
-
-  useEffect(() => {
-    refresh();
-  }, [refresh]);
-
-  const toggleLog = useCallback(
-    async (habitId: number) => {
-      const db = await getDb();
-      await logsService.toggleHabitLog(db, habitId, date);
-      await refresh();
+  const query = useQuery({
+    queryKey: TODAY_HABITS_KEY(user?.id ?? '', date),
+    queryFn: async () => {
+      const [habits, logs] = await Promise.all([
+        getHabits(user!.id),
+        getLogsForDate(user!.id, date),
+      ]);
+      const logMap = new Map(logs.map((l: HabitLog) => [l.habit_id, l.completed]));
+      return habits
+        .filter(isScheduledToday)
+        .map((h): HabitWithCompletion => ({
+          ...h,
+          completed: logMap.get(h.id) ?? false,
+        }));
     },
-    [date, refresh]
-  );
+    enabled: !!user,
+  });
 
+  const toggleMutation = useMutation({
+    mutationFn: (habitId: string) => toggleHabitLog(user!.id, habitId, date),
+    onSuccess: () =>
+      qc.invalidateQueries({ queryKey: TODAY_HABITS_KEY(user?.id ?? '', date) }),
+  });
+
+  const todayHabits = query.data ?? [];
   const completedCount = todayHabits.filter((h) => h.completed).length;
   const totalCount = todayHabits.length;
 
-  return { todayHabits, loading, toggleLog, refresh, completedCount, totalCount, date };
+  return {
+    todayHabits,
+    loading: query.isLoading,
+    error: query.error ? String(query.error) : null,
+    toggleLog: toggleMutation.mutateAsync,
+    refresh: () => qc.invalidateQueries({ queryKey: TODAY_HABITS_KEY(user?.id ?? '', date) }),
+    completedCount,
+    totalCount,
+    date,
+  };
 }

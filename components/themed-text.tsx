@@ -1,5 +1,6 @@
 import { StyleSheet, Text, type TextProps } from 'react-native';
-import { Palette, Typography } from '@/constants/theme';
+import { Palette, DarkPalette, Typography } from '@/constants/theme';
+import { useAppTheme } from '@/hooks/use-app-theme';
 
 export type ThemedTextProps = TextProps & {
   type?: 'default' | 'title' | 'defaultSemiBold' | 'subtitle' | 'link';
@@ -7,15 +8,18 @@ export type ThemedTextProps = TextProps & {
 };
 
 export function ThemedText({ style, type = 'default', color, ...rest }: ThemedTextProps) {
+  const { colorScheme } = useAppTheme();
+  const palette = colorScheme === 'dark' ? DarkPalette : Palette;
+
   return (
     <Text
       style={[
-        { color: color ?? Palette.inkPrimary },
+        { color: color ?? palette.inkPrimary },
         type === 'default' ? styles.default : undefined,
         type === 'title' ? styles.title : undefined,
         type === 'defaultSemiBold' ? styles.defaultSemiBold : undefined,
         type === 'subtitle' ? styles.subtitle : undefined,
-        type === 'link' ? styles.link : undefined,
+        type === 'link' ? { ...styles.link, color: palette.accent } : undefined,
         style,
       ]}
       {...rest}
@@ -46,7 +50,6 @@ const styles = StyleSheet.create({
   link: {
     fontSize: Typography.md,
     lineHeight: Typography.md * Typography.normal,
-    color: Palette.accent,
     textDecorationLine: 'underline',
   },
 });

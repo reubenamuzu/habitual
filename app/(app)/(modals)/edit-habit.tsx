@@ -8,25 +8,35 @@ import { PressableScale } from '@/components/shared/pressable-scale';
 import { ThemedText } from '@/components/themed-text';
 import { Divider } from '@/components/shared/divider';
 import { useHabits } from '@/hooks/use-habits';
-import { getDb } from '@/lib/db/database';
 import { getHabitById } from '@/lib/habits/habits.service';
-import type { Habit } from '@/lib/db/schema';
+import type { Habit } from '@/lib/database.types';
 
 export default function EditHabitModal() {
   const router = useRouter();
   const params = useLocalSearchParams<{ id: string }>();
-  const habitId = Number(params.id);
+  const habitId = params.id;
   const { update, archive } = useHabits();
   const [habit, setHabit] = useState<Habit | null>(null);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (!habitId) return;
-    getDb().then((db) => getHabitById(db, habitId)).then(setHabit);
+    getHabitById(habitId)
+      .then(setHabit)
+      .catch(() => Alert.alert('Error', 'Could not load habit details.'));
   }, [habitId]);
 
-  const handleSubmit = async (name: string, icon: string) => {
-    await update(habitId, { name, icon });
-    router.back();
+  const handleSubmit = async (name: string, icon: string, scheduleType: 'daily' | 'custom', scheduleDays: number[]) => {
+    if (saving || !habitId) return;
+    try {
+      setSaving(true);
+      await update(habitId, { name, icon, schedule_type: scheduleType, schedule_days: scheduleDays });
+      router.back();
+    } catch (e) {
+      Alert.alert('Error', e instanceof Error ? e.message : 'Failed to save changes. Please try again.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleArchive = () => {
@@ -39,8 +49,13 @@ export default function EditHabitModal() {
           text: 'Archive',
           style: 'destructive',
           onPress: async () => {
-            await archive(habitId);
-            router.back();
+            if (!habitId) return;
+            try {
+              await archive(habitId);
+              router.back();
+            } catch (e) {
+              Alert.alert('Error', e instanceof Error ? e.message : 'Failed to archive habit.');
+            }
           },
         },
       ]
@@ -54,8 +69,11 @@ export default function EditHabitModal() {
       <HabitForm
         initialName={habit.name}
         initialIcon={habit.icon}
+        initialScheduleType={habit.schedule_type}
+        initialScheduleDays={habit.schedule_days}
         onSubmit={handleSubmit}
-        submitLabel="Save Changes"
+        submitLabel={saving ? 'Saving…' : 'Save Changes'}
+        disabled={saving}
       />
 
       <View style={styles.dangerZone}>

@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { Palette, Spacing, Typography } from '@/constants/theme';
@@ -31,8 +31,16 @@ interface MoodButtonProps {
 
 function MoodButton({ timeOfDay, score, onPress }: MoodButtonProps) {
   const label = timeOfDay === 'morning' ? '☀️ Morning' : '🌙 Evening';
+  const a11yLabel = score != null
+    ? `${timeOfDay === 'morning' ? 'Morning' : 'Evening'} mood: ${score} out of 10. Tap to update.`
+    : `Log ${timeOfDay === 'morning' ? 'morning' : 'evening'} mood`;
   return (
-    <PressableScale style={moodStyles.button} onPress={onPress}>
+    <PressableScale
+      style={moodStyles.button}
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={a11yLabel}
+    >
       <ThemedText style={moodStyles.timeLabel}>{label}</ThemedText>
       {score != null ? (
         <ThemedText style={moodStyles.score}>{score}<ThemedText style={moodStyles.scoreOf}>/10</ThemedText></ThemedText>
@@ -76,8 +84,8 @@ const moodStyles = StyleSheet.create({
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { todayHabits, loading, toggleLog, refresh, completedCount, totalCount } = useTodayHabits();
-  const { todayMood, refresh: refreshMood } = useMood();
+  const { todayHabits, loading, error, toggleLog, refresh, completedCount, totalCount } = useTodayHabits();
+  const { todayMood, error: moodError, refresh: refreshMood } = useMood();
 
   useFocusEffect(
     useCallback(() => {
@@ -98,7 +106,17 @@ export default function HomeScreen() {
           subtitle={formatDate(new Date())}
         />
 
-        {/* Progress ring */}
+        {error && (
+          <TouchableOpacity style={styles.errorBanner} onPress={refresh} accessibilityRole="button" accessibilityLabel="Failed to load habits. Tap to retry.">
+            <ThemedText style={styles.errorText}>⚠️ {error} — Tap to retry</ThemedText>
+          </TouchableOpacity>
+        )}
+        {moodError && (
+          <TouchableOpacity style={styles.errorBanner} onPress={refreshMood} accessibilityRole="button" accessibilityLabel="Failed to load mood. Tap to retry.">
+            <ThemedText style={styles.errorText}>⚠️ {moodError} — Tap to retry</ThemedText>
+          </TouchableOpacity>
+        )}
+
         {!loading && totalCount > 0 && (
           <View style={styles.ringCard}>
             <CompletionRing completed={completedCount} total={totalCount} size={88} />
@@ -108,22 +126,20 @@ export default function HomeScreen() {
                   ? 'All done! 🎉'
                   : `${totalCount - completedCount} remaining`}
               </ThemedText>
-              <ThemedText style={styles.ringSubtitle}>Today's habits</ThemedText>
+              <ThemedText style={styles.ringSubtitle}>Today&apos;s habits</ThemedText>
             </View>
           </View>
         )}
 
         <Divider style={styles.divider} />
 
-        {/* Habits */}
         <View style={styles.section}>
-          <ThemedText style={styles.sectionTitle}>Today's Habits</ThemedText>
+          <ThemedText style={styles.sectionTitle}>Today&apos;s Habits</ThemedText>
           {!loading && <HabitList habits={todayHabits} onToggle={toggleLog} />}
         </View>
 
         <Divider style={styles.divider} />
 
-        {/* Mood */}
         <View style={styles.section}>
           <ThemedText style={styles.sectionTitle}>Mood</ThemedText>
           <View style={styles.moodRow}>
@@ -196,5 +212,17 @@ const styles = StyleSheet.create({
   moodRow: {
     flexDirection: 'row',
     gap: Spacing.md,
+  },
+  errorBanner: {
+    backgroundColor: '#FEF2F2',
+    borderRadius: 8,
+    padding: Spacing.md,
+    marginBottom: Spacing.sm,
+    borderWidth: 1,
+    borderColor: '#FECACA',
+  },
+  errorText: {
+    fontSize: Typography.sm,
+    color: Palette.danger,
   },
 });
