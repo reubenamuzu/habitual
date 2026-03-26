@@ -1,50 +1,113 @@
-# Welcome to your Expo app 👋
+# Habitual
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A mobile habit tracking app built with Expo and React Native. Track daily habits, log your mood, visualize progress with heatmaps and charts, and stay accountable with friends.
 
-## Get started
+## Features
 
-1. Install dependencies
+- **Habit Tracking** — Create habits with custom icons, colors, and flexible schedules (daily or specific days). Toggle completions with a single tap.
+- **Mood Logging** — Record morning and evening mood scores (1-10) with a simple slider interface.
+- **Dashboard & Analytics** — 90-day habit consistency heatmap, mood trend line chart, streak tracking, and completion rates.
+- **Social** — Add friends, view their daily activity, and send/accept friend requests.
+- **Profile & Stats** — View total habits, best streaks, average mood, and per-habit performance.
+- **Dark Mode** — Full light/dark theme support with system preference detection.
 
-   ```bash
-   npm install
-   ```
+## Tech Stack
 
-2. Start the app
+| Layer | Technology |
+|-------|-----------|
+| Framework | [Expo](https://expo.dev) (v54) + React Native |
+| Language | TypeScript (strict mode) |
+| Navigation | [Expo Router](https://docs.expo.dev/router/introduction/) (file-based, typed routes) |
+| Backend | [Supabase](https://supabase.com) (PostgreSQL, Auth, Storage) |
+| State | [TanStack React Query](https://tanstack.com/query) |
+| Animations | [React Native Reanimated](https://docs.swmansion.com/react-native-reanimated/) |
+| Charts | [React Native SVG](https://github.com/software-mansion/react-native-svg) |
+| Forms | React Hook Form + Zod validation |
+| Fonts | Inter (Google Fonts) |
 
-   ```bash
-   npx expo start
-   ```
+## Getting Started
 
-In the output, you'll find options to open the app in a
+### Prerequisites
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+- [Node.js](https://nodejs.org/) (v18+)
+- [Expo CLI](https://docs.expo.dev/get-started/installation/)
+- A Supabase project with the required tables (see [Database Schema](#database-schema))
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+### Installation
 
 ```bash
-npm run reset-project
+# Clone the repository
+git clone https://github.com/reubenamuzu/habitual.git
+cd habitual
+
+# Install dependencies
+npm install
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+### Environment Setup
 
-## Learn more
+Create a `.env.local` file in the project root with your Supabase credentials:
 
-To learn more about developing your project with Expo, look at the following resources:
+```env
+EXPO_PUBLIC_SUPABASE_URL=your_supabase_url
+EXPO_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+### Run the App
 
-## Join the community
+```bash
+# Start the development server
+npx expo start
 
-Join our community of developers creating universal apps.
+# Run on a specific platform
+npx expo start --android
+npx expo start --ios
+npx expo start --web
+```
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+## Project Structure
+
+```
+app/
+  (auth)/           # Welcome, sign-in, sign-up screens
+  (app)/
+    (tabs)/         # Home, Dashboard, Social, Profile tabs
+    (modals)/       # Add/edit habit, log mood, friend search
+lib/
+  auth/             # Authentication service
+  db/               # Supabase client & type definitions
+  habits/           # Habit CRUD & log toggle services
+  mood/             # Mood upsert & query services
+  social/           # Friend requests & activity feed
+  profile/          # Profile & avatar management
+components/
+  habits/           # HabitCard, HabitForm, HabitCheckButton
+  mood/             # MoodSlider, MoodChart, MoodLogButton
+  heatmap/          # HeatmapGrid, HeatmapCell, HeatmapLegend
+  stats/            # CompletionRing, StatCard, StreakBadge
+  shared/           # PressableScale, ModalSheet, EmptyState
+hooks/              # React Query wrappers for all services
+constants/
+  theme.ts          # Design tokens (colors, typography, spacing)
+```
+
+## Database Schema
+
+| Table | Purpose |
+|-------|---------|
+| `profiles` | User info (username, display name, avatar) |
+| `habits` | Habit definitions (name, icon, color, schedule) |
+| `habit_logs` | Daily completion records |
+| `mood_logs` | Morning/evening mood scores (1-10) |
+| `friendships` | Social connections and friend requests |
+
+## Scripts
+
+```bash
+npx expo start       # Start dev server
+npx expo lint        # Run ESLint
+```
+
+## License
+
+This project is private and not licensed for redistribution.
